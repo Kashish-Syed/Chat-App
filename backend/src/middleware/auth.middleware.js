@@ -1,10 +1,10 @@
-import jwt, { decode } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import { config } from "dotenv";
 
 config();
 
-export const protectRoute = async (res, req, next) => {
+export const protectRoute = async (req, res, next) => {
   try {
     const token = req.cookies.jwt;
 
@@ -17,9 +17,7 @@ export const protectRoute = async (res, req, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded) {
-      return res
-        .status(401)
-        .json({ message: "Unauthorized - No Token Provided" });
+      return res.status(401).json({ message: "Unauthorized - Invalid Token" });
     }
 
     const user = await User.findById(decoded.userId).select("-password");
@@ -33,6 +31,6 @@ export const protectRoute = async (res, req, next) => {
     next();
   } catch (error) {
     console.log("Error in protectRoute middleware: ", error.message);
-    return res.status(500).json({ message: "Internal Server Errror" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
